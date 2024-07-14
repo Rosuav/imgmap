@@ -1,3 +1,6 @@
+Nightmare.hocr: Nightmare.png
+	tesseract Nightmare.png Nightmare hocr
+
 Nightmare.png: Nightmare.pdf
 	convert -density 300 Nightmare.pdf -background white -alpha remove Nightmare.png
 
