@@ -59,16 +59,20 @@ array xfrm(array matrix, int x, int y) {
 int main() {
 	array original = list_words(utf8_to_string(Stdio.read_file("Nightmare.hocr")));
 	//1. Grab a screenshot
-	//TODO. For now, using Grotty.png directly.
-	string screenshot = Stdio.read_file("Grotty.png");
+	mapping proc = Process.run(({
+		"ffmpeg", "-video_size", "1920x1080", "-f", "x11grab", "-i", ":0.0+1920,0",
+		"-vframes", "1", "-f", "apng", "-",
+	}));
+	string screenshot = proc->stdout;
 	//2. Tesseract
-	mapping proc = Process.run(({"tesseract", "-", "-", "hocr"}), (["stdin": screenshot]));
+	proc = Process.run(({"tesseract", "-", "-", "hocr"}), (["stdin": screenshot]));
 	//3. Parse XML
 	array words = list_words(utf8_to_string(proc->stdout));
 	//4. Compare to original list
 	array pairs = match_arrays(original, words) {[mapping o, mapping d] = __ARGS__;
 		return o->text == d->text && (centroid(o->pos) + centroid(d->pos));
 	};
+	werror("%d word pairs\n", sizeof(pairs));
 	//5. Least-squares linear regression. Currently done in Python+Numpy, would it be worth doing in Pike instead?
 	proc = Process.run(({"python3.12", "regress.py"}), (["stdin": Standards.JSON.encode(pairs, 1)]));
 	if (proc->exitcode) {
