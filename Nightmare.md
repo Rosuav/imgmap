@@ -46,3 +46,7 @@ And just as a few are allotted to you, you awake with a shudder despairing...
 You're a regular wreck, with a crick in your neck, and no wonder you snore, for your head's on the floor, and you've needles and pins from your soles to your shins, and your flesh is a-creep, for your left leg's asleep, and you've cramp in your toes, and a fly on your nose, and some fluff in your lung, and a feverish tongue, and a thirst that's intense, and a general sense that you haven't been sleeping in clover;
 
 But the darkness has passed, and it's daylight at last, and the night has been long--ditto ditto my song--and thank goodness they're both of them over!
+
+---
+
+---
