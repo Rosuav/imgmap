@@ -64,6 +64,7 @@ int main() {
 		"-vframes", "1", "-f", "apng", "-",
 	}));
 	string screenshot = proc->stdout;
+	//screenshot = Stdio.read_file("Grotty.png"); //HACK
 	//2. Tesseract
 	proc = Process.run(({"tesseract", "-", "-", "hocr"}), (["stdin": screenshot]));
 	//3. Parse XML
@@ -97,8 +98,14 @@ int main() {
 	constant gutter = 25; //pixels
 	Image.Image preview = Image.Image(orig->xsize() + gutter + img->xsize(), max(orig->ysize(), img->ysize()));
 	int origy = (preview->ysize() - orig->ysize()) / 2;
+	int imgx = orig->xsize() + gutter;
 	int imgy = (preview->ysize() - img->ysize()) / 2;
 	preview->paste(orig, 0, origy);
-	preview->paste(img, orig->xsize() + gutter, imgy);
+	preview->paste(img, imgx, imgy);
+	//For every matched word pair, draw a connecting line
+	foreach (pairs, [int x1, int y1, int x2, int y2]) {
+		werror("%d %d %d %d\n", x1, y1, x2, y2);
+		preview->line(x1, y1 + origy, x2 + imgx, y2 + imgy, random(256), random(256), random(256));
+	}
 	Stdio.write_file("preview.png", Image.PNG.encode(preview));
 }
