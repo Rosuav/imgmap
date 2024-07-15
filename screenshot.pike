@@ -50,6 +50,12 @@ array centroid(array pos) {
 	return ({(pos[0] + pos[2]) / 2, (pos[1] + pos[3]) / 2});
 }
 
+array xfrm(array matrix, int x, int y) {
+	//No easy matmul operation, so we do it manually
+	return ({matrix[0] * x + matrix[1] * y + matrix[2],
+		 matrix[3] * x + matrix[4] * y + matrix[5]});
+}
+
 int main() {
 	array original = list_words(utf8_to_string(Stdio.read_file("Nightmare.hocr")));
 	//1. Grab a screenshot
@@ -69,8 +75,20 @@ int main() {
 		werror("Error from Python: %d\n%s\n", proc->exitcode, proc->stderr);
 		return proc->exitcode;
 	}
-	mapping matrix = Standards.JSON.decode(proc->stdout);
-	werror("Matrix: %O\n", matrix);
+	array matrix = Standards.JSON.decode(proc->stdout);
 	//6. Generate output images
-	//write("Parse result: %O\n", original);
+	//As a test, we place a sample box in source coordinates
+	array box = ({755, 2104, 1795, 2157});
+	Image.Image img = Image.PNG.decode(Stdio.read_file("Nightmare.png"));
+	img->box(@box, 0, 255, 255);
+	Stdio.write_file("template.png", Image.PNG.encode(img));
+	img = Image.PNG.decode(screenshot);
+	array points = ({
+		xfrm(matrix, box[0], box[1]),
+		xfrm(matrix, box[2], box[1]),
+		xfrm(matrix, box[2], box[3]),
+		xfrm(matrix, box[0], box[3]),
+	});
+	img->setcolor(0x66, 0x33, 0x99)->polyfill(points * ({ }));
+	Stdio.write_file("document.png", Image.PNG.encode(img));
 }
