@@ -18,13 +18,49 @@ array list_words(string xml) {
 	}[0];
 }
 
+array match_arrays(array arr1, array arr2, function pred) {
+	//Step through the arrays, finding those that match
+	//The predicate function should return a truthy value when they match, and these values
+	//will be collected into the result.
+	int d1, d2; //Denoters for the respective arrays
+	array ret = ({ });
+	nextmatch: while (d1 < sizeof(arr1) && d2 < sizeof(arr2)) {
+		if (mixed match = pred(arr1[d1], arr2[d2])) {
+			//Match!
+			d1++; d2++;
+			ret += ({match});
+			continue;
+		}
+		//Try to advance d1 until we get a match; no further than 4 steps.
+		for (int i = 1; i < 5 && d1 + i < sizeof(arr1); ++i) {
+			if (mixed match = pred(arr1[d1+i], arr2[d2])) {
+				//That'll do!
+				d1 += i + 1; d2++;
+				ret += ({match});
+				continue nextmatch;
+			}
+		}
+		//No match in the next few? Skip one from arr2 and carry on.
+		d2++;
+	}
+	return ret;
+}
+
 int main() {
+	array original = list_words(utf8_to_string(Stdio.read_file("Nightmare.hocr")));
 	//1. Grab a screenshot
+	//TODO. For now, using Grotty.png directly.
+	string screenshot = Stdio.read_file("Grotty.png");
 	//2. Tesseract
+	mapping proc = Process.run(({"tesseract", "-", "-", "hocr"}), (["stdin": screenshot]));
 	//3. Parse XML
+	array words = list_words(utf8_to_string(proc->stdout));
 	//4. Compare to original list
+	array pairs = match_arrays(original, words) {[mapping o, mapping d] = __ARGS__;
+		return o->text == d->text && (["orig": o->pos, "doc": d->pos]);
+	};
+	werror("Pairs: %O\n", pairs);
 	//5. Least-squares linear regression. Currently done in Python+Numpy, would it be worth doing in Pike instead?
 	//6. Generate output images
-	array original = list_words(utf8_to_string(Stdio.read_file("Nightmare.hocr")));
-	write("Parse result: %O\n", original);
+	//write("Parse result: %O\n", original);
 }
