@@ -83,10 +83,9 @@ int main() {
 	//6. Generate output images
 	//As a test, we place a sample box in source coordinates
 	array box = ({755, 2104, 1795, 2157});
-	Image.Image img = Image.PNG.decode(Stdio.read_file("Nightmare.png"));
-	img->box(@box, 0, 255, 255);
-	Stdio.write_file("template.png", Image.PNG.encode(img));
-	img = Image.PNG.decode(screenshot);
+	Image.Image orig = Image.PNG.decode(Stdio.read_file("Nightmare.png"));
+	orig->box(@box, 0, 255, 255);
+	Image.Image img = Image.PNG.decode(screenshot);
 	array points = ({
 		xfrm(matrix, box[0], box[1]),
 		xfrm(matrix, box[2], box[1]),
@@ -94,5 +93,12 @@ int main() {
 		xfrm(matrix, box[0], box[3]),
 	});
 	img->setcolor(0x66, 0x33, 0x99)->polyfill(points * ({ }));
-	Stdio.write_file("document.png", Image.PNG.encode(img));
+	//Make a single combined file
+	constant gutter = 25; //pixels
+	Image.Image preview = Image.Image(orig->xsize() + gutter + img->xsize(), max(orig->ysize(), img->ysize()));
+	int origy = (preview->ysize() - orig->ysize()) / 2;
+	int imgy = (preview->ysize() - img->ysize()) / 2;
+	preview->paste(orig, 0, origy);
+	preview->paste(img, orig->xsize() + gutter, imgy);
+	Stdio.write_file("preview.png", Image.PNG.encode(preview));
 }
