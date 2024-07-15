@@ -96,16 +96,22 @@ int main() {
 	img->setcolor(0x66, 0x33, 0x99)->polyfill(points * ({ }));
 	//Make a single combined file
 	constant gutter = 25; //pixels
+	constant center = 1; //If 0, the images will be flush top; otherwise they'll be centered vertically in available space.
+	//If there's a huge difference in image sizes, rescale until there isn't.
+	int origscale = 1, imgscale = 1;
+	while (orig->ysize() >= img->ysize() * 2) {origscale *= 2; orig = orig->scale(0.5);}
+	while (img->ysize() >= orig->ysize() * 2) {imgscale *= 2; img = img->scale(0.5);}
 	Image.Image preview = Image.Image(orig->xsize() + gutter + img->xsize(), max(orig->ysize(), img->ysize()));
-	int origy = (preview->ysize() - orig->ysize()) / 2;
+	int origy = center && (preview->ysize() - orig->ysize()) / 2;
 	int imgx = orig->xsize() + gutter;
-	int imgy = (preview->ysize() - img->ysize()) / 2;
+	int imgy = center && (preview->ysize() - img->ysize()) / 2;
 	preview->paste(orig, 0, origy);
 	preview->paste(img, imgx, imgy);
 	//For every matched word pair, draw a connecting line
 	foreach (pairs, [int x1, int y1, int x2, int y2]) {
-		werror("%d %d %d %d\n", x1, y1, x2, y2);
-		preview->line(x1, y1 + origy, x2 + imgx, y2 + imgy, random(256), random(256), random(256));
+		preview->line(x1 / origscale, y1 / origscale + origy,
+			x2 / imgscale + imgx, y2 / imgscale + imgy,
+			random(256), random(256), random(256));
 	}
 	Stdio.write_file("preview.png", Image.PNG.encode(preview));
 }
