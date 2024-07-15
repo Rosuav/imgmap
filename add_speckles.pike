@@ -8,6 +8,7 @@ int main(int argc, array(string) argv) {
 	border[1] = border[1] * 8 / 10;
 	border[2] = img->xsize() - (img->xsize() - border[2]) * 8 / 10;
 	border[3] = img->xsize() - (img->xsize() - border[3]) * 8 / 10;
+	write("Crop: %O\n", border);
 	img = img->copy(@border);
 	int speckles = (int)argv[2];
 	while (speckles-- > 0) {
