@@ -31,8 +31,11 @@ array match_arrays(array arr1, array arr2, function pred) {
 			ret += ({match});
 			continue;
 		}
-		//Try to advance d1 until we get a match; no further than 4 steps.
-		for (int i = 1; i < 5 && d1 + i < sizeof(arr1); ++i) {
+		//Try to advance d1 until we get a match; not too many steps though.
+		//The limit is a tweakable - if resynchronization can happen after
+		//that many failures, it might be a phantom resync and not actually
+		//helpful. A lower number is also faster than a higher one.
+		for (int i = 1; i < 10 && d1 + i < sizeof(arr1); ++i) {
 			if (mixed match = pred(arr1[d1+i], arr2[d2])) {
 				//That'll do!
 				d1 += i + 1; d2++;
