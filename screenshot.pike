@@ -46,6 +46,10 @@ array match_arrays(array arr1, array arr2, function pred) {
 	return ret;
 }
 
+array centroid(array pos) {
+	return ({(pos[0] + pos[2]) / 2, (pos[1] + pos[3]) / 2});
+}
+
 int main() {
 	array original = list_words(utf8_to_string(Stdio.read_file("Nightmare.hocr")));
 	//1. Grab a screenshot
@@ -57,10 +61,16 @@ int main() {
 	array words = list_words(utf8_to_string(proc->stdout));
 	//4. Compare to original list
 	array pairs = match_arrays(original, words) {[mapping o, mapping d] = __ARGS__;
-		return o->text == d->text && (["orig": o->pos, "doc": d->pos]);
+		return o->text == d->text && (centroid(o->pos) + centroid(d->pos));
 	};
-	werror("Pairs: %O\n", pairs);
 	//5. Least-squares linear regression. Currently done in Python+Numpy, would it be worth doing in Pike instead?
+	proc = Process.run(({"python3.12", "regress.py"}), (["stdin": Standards.JSON.encode(pairs, 1)]));
+	if (proc->exitcode) {
+		werror("Error from Python: %d\n%s\n", proc->exitcode, proc->stderr);
+		return proc->exitcode;
+	}
+	mapping matrix = Standards.JSON.decode(proc->stdout);
+	werror("Matrix: %O\n", matrix);
 	//6. Generate output images
 	//write("Parse result: %O\n", original);
 }
