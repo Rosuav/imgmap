@@ -27,6 +27,9 @@ def find_affine_transformation(points):
 	affine_params, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
 	return affine_params
 
-points = json.loads(input())
-affine_matrix = find_affine_transformation(points)
-print(json.dumps(list(affine_matrix)))
+try:
+	while True:
+		points = json.loads(input())
+		affine_matrix = find_affine_transformation(points)
+		print(json.dumps(list(affine_matrix)))
+except EOFError: pass
